@@ -24,6 +24,6 @@ post '/webhook_inspectlet' do
   landing_page = hash[:new_session][:landing_page]
   session_duration = hash.fetch(:new_session).fetch(:session_duration)
   duration = session_duration/1000
-  message = "New session is recorded by Inspectlet:\n#{ip} (#{country})\n[(#{landing_page})]\nSession duration: #{duration} sec.\n[View session on Inspectlet](#{url})"
-  api.sendMessage(chat_id, message, {"parse_mode" => "Markdown"})
+  message = "New session is recorded by Inspectlet:\n#{ip} (#{country})\n#{landing_page}\nSession duration: #{duration} sec.\n[View session on Inspectlet](#{url})"
+  api.sendMessage(chat_id&disable_web_page_preview=true, message, {"parse_mode" => "Markdown"})
 end
