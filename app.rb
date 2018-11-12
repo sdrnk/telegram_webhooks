@@ -27,3 +27,16 @@ post '/webhook_inspectlet' do
   message = "New session is recorded by Inspectlet:\n#{ip} (#{country})\n#{landing_page}\nSession duration: #{duration} sec.\n[View session on Inspectlet](#{url})"
   api.sendMessage(chat_id, message, {"parse_mode" => "Markdown", "disable_web_page_preview" => true})
 end
+
+post '/webhook_gitea' do
+  token = ENV["TELEGRAM_TOKEN"]
+  chat_id = ENV["TELEGRAM_CHAT_ID"]
+  api = TelegramAPI.new token
+  commit = JSON.parse(request.body.read)["commits"]
+  hash = commit.first
+  text = hash.fetch("message")
+  author = hash.fetch("author").fetch("name")
+  url = hash.fetch("url")
+  message = "#{text}by #{author}\n[View on Gitea](#{url})"
+  api.sendMessage(chat_id, message, {"parse_mode" => "Markdown"})
+end
