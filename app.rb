@@ -29,14 +29,25 @@ post '/webhook_inspectlet' do
 end
 
 post '/webhook_gitea' do
+
   token = ENV["TELEGRAM_TOKEN"]
   chat_id = ENV["TELEGRAM_CHAT_ID"]
   api = TelegramAPI.new token
   commit = JSON.parse(request.body.read)["commits"]
-  hash = commit.first
-  text = hash.fetch("message")
-  author = hash.fetch("author").fetch("name")
-  url = hash.fetch("url")
-  message = "#{text}by #{author}\n[View on Gitea](#{url})"
+  unless commit.nil?
+    hash = commit.first
+    commit_title = hash.fetch("message")
+    commit_author = hash.fetch("author").fetch("name")
+    commit_url = hash.fetch("url")
+  end
+  request.body.rewind
+  payload = JSON.parse(request.body.read)["pull_request"]
+  unless payload.nil?
+    pull_request_title = payload.fetch("title")
+    pull_request_author = payload.fetch("user").fetch("username")
+    state = payload.fetch("state")
+    pull_request_url = payload.fetch("html_url")
+  end
+  message = "``` #{pull_request_title || commit_title}``` `#{state}` by `#{pull_request_author || commit_author}`\n[View on Gitea](#{pull_request_url || commit_url})"
   api.sendMessage(chat_id, message, {"parse_mode" => "Markdown"})
 end
