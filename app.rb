@@ -39,6 +39,7 @@ post '/webhook_gitea' do
     commit_title = hash.fetch("message")
     commit_author = hash.fetch("author").fetch("name")
     commit_url = hash.fetch("url")
+    message = "***Commit by*** `#{commit_author}`:\n``` #{commit_title}```[View on Gitea](#{commit_url})"
   end
 
   request.body.rewind
@@ -48,8 +49,8 @@ post '/webhook_gitea' do
     pull_request_author = payload.fetch("user").fetch("username")
     state = payload.fetch("state")
     pull_request_url = payload.fetch("html_url")
+    message = "***Pull request*** `#{state}` by `#{pull_request_author}`:\n``` #{pull_request_title}``` \n[View on Gitea](#{pull_request_url})"
   end
 
-  message = "``` #{pull_request_title || commit_title}``` `#{state}` by `#{pull_request_author || commit_author}`\n[View on Gitea](#{pull_request_url || commit_url})"
   api.sendMessage(chat_id, message, {"parse_mode" => "Markdown"})
 end
