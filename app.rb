@@ -32,7 +32,6 @@ post '/webhook_gitea' do
   token = ENV["TELEGRAM_TOKEN"]
   chat_id = ENV["TELEGRAM_CHAT_ID"]
   api = TelegramAPI.new token
-
   commit = JSON.parse(request.body.read)["commits"]
   unless commit.nil?
     hash = commit.first
@@ -46,9 +45,15 @@ post '/webhook_gitea' do
   payload = JSON.parse(request.body.read)["pull_request"]
   unless payload.nil?
     pull_request_title = payload.fetch("title")
-    pull_request_author = payload.fetch("user").fetch("username")
-    state = payload.fetch("state")
-    pull_request_url = payload.fetch("html_url")
+    if payload.fetch("state") == "open"
+      pull_request_author = payload.fetch("user").fetch("username")
+      state = payload.fetch("state")
+      pull_request_url = payload.fetch("html_url")
+    else
+      pull_request_author = payload.fetch("merged_by").fetch("username")
+      state = payload.fetch("state")
+      pull_request_url = payload.fetch("html_url")
+    end
     message = "***Pull request*** `#{state}` by `#{pull_request_author}`:\n``` #{pull_request_title}``` \n[View on Gitea](#{pull_request_url})"
   end
 
